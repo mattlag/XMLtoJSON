@@ -39,7 +39,7 @@
 	function getThatJson () {
 		var xml_in = document.getElementById('xml').value;
 
-		var result = parseXMLtag(xml_in);
+		var result = XMLtoJSON(xml_in);
 		// result = JSON.stringify(result, undefined, '\t');
 		result = JSON.stringify(result, undefined, ' ');
 		result = result.replace(/\n/g, '\r\n');

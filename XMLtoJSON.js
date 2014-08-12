@@ -1,143 +1,190 @@
+function XMLtoJSON(inputXML){
 
-String.prototype.ss = String.prototype.substring;
-String.prototype.io = String.prototype.indexOf;
-String.prototype.ca = String.prototype.charAt;
+	var console_debug = true;
 
-var callcount = 0;
+	inputXML = inputXML.replace(/(\r\n|\n|\r|\t)/gm,"");
+	return parseXMLtag(inputXML);
 
-function parseXMLtag (tag) {
-	if(callcount > 1000) { return {}; } else { callcount++; }
+	function parseXMLtag (tag) {
+		log('\nVVVVVVVVVVVVVVVVVVVVVVVVV\nTAG\n' + tag.substring(0, 20) + '...');
 
-	console.log('\nTAG\n' + tag.ss(0, 20) + '...');
-	tag = tag.replace(/(\r\n|\n|\r)/gm,"");
+		// Look for strange stuff & fix it
+		if(tag === '') return {};
 
-	if(tag === '') return {};
+		while(tag.charAt(0) !== '<') tag = tag.substring(1);
 
-	while(tag.ca(0) !== '<') tag = tag.ss(1);
+		if(tag.charAt(1) === '?') {
+			return parseXMLtag(tag.substring(tag.indexOf('>')+1));
+		}
 
-	if(tag.ca(1) === '!' || tag.ca(1) === '?') {
-		return parseXMLtag(tag.ss(tag.io('>')+1));
+		if(tag.substring(0, 9) === '<![CDATA['){
+			return parseXMLtag(tag.substring(tag.indexOf(']]>')+3));
+		}
+
+		if(tag.charAt(1) === '!'){
+			return parseXMLtag(tag.substring(tag.indexOf('>')+1));
+		}
+
+
+		// Start Parsing
+		var tagname_endpos = Math.min(tag.indexOf(' '), Math.min(tag.indexOf('/'), tag.indexOf('>')));
+		var tagname = tag.substring(1, tagname_endpos);
+		log('\t tag name: ' + tagname);
+		var tagattributes = parseXMLattributes(tag.substring(tagname_endpos, tag.indexOf('>')));
+		var tagcontent = parseXMLcontent(tag.substring(tag.indexOf('>')+1, tag.indexOf('</'+tagname+'>')));
+
+		var result = {
+			'name' : tagname,
+			'attributes' : tagattributes,
+			'content' : tagcontent
+		};
+
+		log('TAG ' + tagname + ' DONE\n^^^^^^^^^^^^^^^^^^^^^^^^^\n');
+		return result;
 	}
 
-	var tagname_endpos = Math.min(tag.io(' '), Math.min(tag.io('/'), tag.io('>')));
-	var tagname = tag.ss(1, tagname_endpos);
-	console.log('\t tag name: ' + tagname);
-	var tagattributes = parseXMLattributes(tag.ss(tagname_endpos, tag.io('>')));
-	var tagcontent = parseXMLcontent(tag.ss(tag.io('>')+1, tag.io('</'+tagname+'>')));
+	function parseXMLcontent (con) {
+		while(con.charAt(0) === ' ') con = con.substring(1);
+		log('\nCONTENT');
+		log(con);
 
-	var result = {
-		'name' : tagname,
-		'attributes' : tagattributes,
-		'content' : tagcontent
-	};
+		if(con.charAt(0) !== '<') return con;
 
-	console.log('TAG ' + tagname + ' RETURNING\n=======================');
-	return result;
-}
+		var result = [];
+		var shouldbreak = false;
+		var startpos = 0;
+		var endpos = 0;
+		var slashpos = 0;
+		var gtpos = 0;
+		var tagname = '';
+		var tagname_endpos = 0;
 
-function parseXMLcontent (con) {
-	if(callcount > 1000) { return {}; } else { callcount++; }
-	
-	while(con.ca(0) === ' ') con = con.ss(1);
-	console.log('\nCONTENT');
-	console.log(con);
+		while(true){
+			// remove whitespace
+			while(con.charAt(0) === ' ') con = con.substring(1);
 
-	if(con.ca(0) !== '<') return con;
+			// remove comments & stuff
+			while(con.substring(0,4) === '<!--'){
+				con = con.substring(con.indexOf('-->')+3);
+				log('\tremoved comment, con is now ' + con);
+				shouldbreak = true;
+			}
 
-	var result = [];
-	var startpos = 0;
-	var endpos = 0;
-	var slashpos = 0;
-	var gtpos = 0;
-	var tagname = '';
-	var tagname_endpos = 0;
-	var trytimes = 0;
+			while(con.substring(0, 9) === '<![CDATA['){
+				con = con.substring(con.indexOf(']]>')+3);
+				log('\tremoved CDATA, con is now ' + con);
+				shouldbreak = true;
+			}
 
-	while(true){
-		console.log('\ttrytimes: ' + trytimes);
+			// remove whitespace
+			while(con.charAt(0) === ' ') con = con.substring(1);
 
-		// remove whitespace
-		while(con.ca(0) === ' ') con = con.ss(1);
-		
-		// remove comments
-		while(con.ss(0,4) === '<!--'){
-			con = con.ss(con.io('-->')+3);
-			console.log('\tremoved comment, con is now ' + con);
+			if(con === ''){
+				log('\tcontent is empty string');
+				return result;
+			}
+
+			if(shouldbreak) {
+				shouldbreak = false;
+				break;
+			}
+
+			// get name
+			gtpos = con.indexOf('>');
+			slashpos = con.indexOf('/');
+			tagname_endpos = Math.min(con.indexOf(' '), Math.min(gtpos, slashpos));
+			tagname = con.substring(startpos+1, tagname_endpos);
+			log('\ttag name: ' + tagname);
+
+			// self closing?
+			if(slashpos === (gtpos-1)){
+				result.push({
+					'name' : tagname,
+					'attributes' : parseXMLattributes(con.substring(tagname_endpos, slashpos)),
+					'content' : false
+				});
+				con = con.substring(gtpos+1);
+			} else {
+				endpos = con.indexOf('</'+tagname+'>') + 3 + tagname.length;
+				result.push(parseXMLtag(con.substring(startpos, endpos)));
+				con = con.substring(endpos);
+			}
+
+			while(con.charAt(0) === ' ') con = con.substring(1);
+			if(con === ''){
+				log('\tdone with all tags in content');
+				return result;
+			}
+			startpos = 0;
+			endpos = 0;
 		}
 
-		// remove whitespace
-		while(con.ca(0) === ' ') con = con.ss(1);
+		return result;
+	}
 
-		console.log('con is ' + con + ' !!con is ' + !!con + ' typeof con is ' + typeof con);
-		
-		if(con === '' || trytimes > 10){
-			console.log('\tcontent is empty string, returning ' + JSON.stringify(result));
-			return result;
-		}
+	function parseXMLattributes (attr) {
+		log('\nATTRIBUTES');
 
-		// get name
-		gtpos = con.io('>');
-		slashpos = con.io('/');
-		tagname_endpos = Math.min(con.io(' '), Math.min(gtpos, slashpos));
-		tagname = con.ss(startpos+1, tagname_endpos);
-		console.log('\ttag name: ' + tagname);
+		while(attr.indexOf(' =') > -1) attr = attr.replace(' =', '=');
+		while(attr.indexOf('= ') > -1) attr = attr.replace('= ', '=');
+		while(attr.charAt(0) === ' ') attr = attr.substring(1);
 
-		// self closing?
-		if(slashpos === (gtpos-1)){
-			result.push({
-				'name' : tagname,
-				'attributes' : parseXMLattributes(con.ss(tagname_endpos, slashpos)),
-				'content' : false
-			});
-			con = con.ss(gtpos+1);
+		if(!attr) {
+			log('\t false attributes, returning []');
+			return [];
 		} else {
-			endpos = con.io('</'+tagname+'>') + 3 + tagname.length;
-			result.push(parseXMLtag(con.ss(startpos, endpos)));
-			con = con.ss(endpos);
+			log(attr);
 		}
 
-		while(con.ca(0) === ' ') con = con.ss(1);
-		if(con === '' || trytimes > 10){
-			console.log('\tdone with all tags in content, returning ' + JSON.stringify(result));
-			return result;
-		}
-		startpos = 0;
-		endpos = 0;
-	}
+		var result = [];
+		var start = 0;
+		var curr = 0;
+		var quote = false;
+		var attr_name = '';
+		var attr_value = '';
 
-	return result;
-}
+		while(curr < attr.length){
+			while(attr.charAt(0) === ' '){
+				curr++;
+				start++;
+			}
 
-function parseXMLattributes (attr) {
-	if(callcount > 1000) { return {}; } else { callcount++; }
-	
-	console.log('\nATTRIBUTES');
+			if(curr >= attr.length) break;
 
-	while(attr.io(' =') > -1) attr = attr.replace(' =', '=');
-	while(attr.io('= ') > -1) attr = attr.replace('= ', '=');
-	while(attr.ca(0) === ' ') attr = attr.ss(1);
+			for(var n=curr; n<(curr+256); n++){
+				if(attr.charAt(curr) === '='){
+					attr_name = attr.substring(start, curr);
+					break;
+				} else {
+					curr++;
+				}
+			}
 
-	if(!attr) {
-		console.log('\t false attributes, returning []');
-		return [];
-	} else {
-		console.log(attr);
-	}
+			curr++;
+			quote = attr.charAt(curr);
+			curr++;
+			start = curr;
 
-	attr = attr.split(' ');
-	console.log('\t attr.split.length: ' + attr.length);
-	var result = [];
-	var pair = [];
+			for(var v=curr; v<(curr+256); v++){
+				if(attr.charAt(curr) === quote){
+					attr_value = attr.substring(start, curr);
+					break;
+				} else {
+					curr++;
+				}
+			}
 
-	for(var a=0; a<attr.length; a++){
-		pair = attr[a].split('=');
-		if(pair[1]){
 			result.push({
-				'name' : pair[0],
-				'value' : pair[1].ss(1, pair[1].length-1)
+				'name' : attr_name,
+				'value' : attr_value
 			});
+
+			curr++;
+			start = curr;
 		}
+
+		return result;
 	}
 
-	return result;
+	function log(text) { if(console_debug) console.log(text); }
 }

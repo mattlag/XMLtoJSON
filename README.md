@@ -19,6 +19,13 @@ var xmltags = [
 ];
 ```
 
+### Things to consider
+XMLtoJSON is really focused on data, and not so much the metadata. So I did this:
+* All comments are ignored &lt;!-- stuff like this --&gt;
+* All declarations are ignored, stuff like <?xml version="1.0" encoding="UTF-8"?>
+* All CDATA sections are ignored, stuff like &lt;![CDATA[<greeting>Hello, world!</greeting>]]&gt; 
+* Newline and Tab characters are blindly removed from everywhere: \r \n \t
+
 ## License
 Copyright (C) 2014 Matthew LaGrandeur, released under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
