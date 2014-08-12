@@ -1,6 +1,6 @@
 function XMLtoJSON(inputXML){
 
-	var console_debug = true;
+	var console_debug = false;
 
 	inputXML = inputXML.replace(/(\r\n|\n|\r|\t)/gm,"");
 	return parseXMLtag(inputXML);
