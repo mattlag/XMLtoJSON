@@ -1,14 +1,14 @@
 # XMLtoJSON
 I know there are probably 13.5 Million of these already, but I wanted to do one myslef, okay?
 
-## resulting data structure
+### resulting data structure
 ```javascript
 var xmltags = [
 	{
-		name : 'XMLTAGNAME',
+		name : 'xml_tagname',
 		attributes : [
 			{
-				name : 'XMLATTRIBUTENAME',
+				name : 'xml_attribute_name',
 				value : 'XML Attribute value'
 			},
 			{...}
@@ -17,7 +17,8 @@ var xmltags = [
 	},
 	{...}
 ];
-	
+```
+
 ## License
 Copyright (C) 2014 Matthew LaGrandeur, released under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
