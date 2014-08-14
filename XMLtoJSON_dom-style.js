@@ -22,52 +22,63 @@ function XMLtoJSON(inputXML){
 
 	return {
 		'name' : XMLdoc.documentElement.nodeName,
-		'attributes' : parseXMLattributes(XMLdoc.documentElement.attributes),
-		'content' : parseXMLtag(XMLdoc.documentElement)
+		'attributes' : tag_getAttributes(XMLdoc.documentElement.attributes),
+		'content' : tag_getContent(XMLdoc.documentElement)
 	};
 
 
-	function parseXMLtag(parent) {
+	function tag_getContent(parent) {
+		var kids = parent.childNodes;
 		log('\nTAG: ' + parent.nodeName + '\t' + parent.childNodes.length);
 
-		var kids = parent.childNodes;
-		if(!kids || !kids.length) {
-			log('\tno children, returning');
-			log('\t'+parent.nodeValue);
-			return parent.nodeValue;
-		}
+		if(kids.length === 0) return trim(parent.nodeValue);
+
 		var result = [];
-		var node;
+		var node, tagresult, tagcontent, tagattributes;
 
 		for(var k=0; k<kids.length; k++){
+			tagresult = {};
 			node = kids[k];
-			if(node.nodeName.charAt(0) !== '#'){
-				log('\t'+node.nodeName);
-				result.push({
-					'name' : node.nodeName,
-					'attributes' : parseXMLattributes(node.attributes),
-					'content' : parseXMLtag(node)
-				});
+			log('\n\t>>START kid ' + k + ' ' + node.nodeName);
+			if(node.nodeName === '#comment') break;
+
+			tagcontent = tag_getContent(node);
+			tagattributes = tag_getAttributes(node.attributes);
+
+			if(node.nodeName === '#text' && JSON.stringify(tagattributes) === '{}'){
+				tagresult = tagcontent;
+			} else {
+				tagresult.name = node.nodeName;
+				tagresult.attributes = tagattributes;
+				tagresult.content = tagcontent;
 			}
+
+			if(tagresult !== '') result.push(tagresult);
+
+			log('\t>>END kid ' + k);
 		}
 
 		return result;
 	}
 
-	function parseXMLattributes(attributes) {
-		if(!attributes || !attributes.length) return [];
-		var result = [];
+	function tag_getAttributes(attributes) {
+		if(!attributes || !attributes.length) return {};
+		var result = {};
 		var attr;
 
 		for(var a=0; a<attributes.length; a++){
-			log('\t\t'+attributes[a].name+' : '+attributes[a].value);
-			result.push({
-				'name' : attributes[a].name,
-				'value' : attributes[a].value
-			});
+			attr = attributes[a];
+			log('\t\t'+attr.name+' : '+attr.value);
+			result[attr.name] = attr.value;
 		}
+
 		return result;
 	}
 
 	function log(text) { if(console_debug) console.log(text); }
+
+	function trim(text) {
+		try { return text.replace(/^\s+|\s+$/g, ''); }
+		catch(e) { return ''; }
+	}
 }

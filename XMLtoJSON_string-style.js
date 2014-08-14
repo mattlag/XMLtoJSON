@@ -44,7 +44,7 @@ function XMLtoJSON(inputXML){
 	}
 
 	function parseXMLcontent (con) {
-		while(con.charAt(0) === ' ') con = con.substring(1);
+		con = trim(con);
 		log('\nCONTENT');
 		log(con);
 
@@ -61,7 +61,7 @@ function XMLtoJSON(inputXML){
 
 		while(true){
 			// remove whitespace
-			while(con.charAt(0) === ' ') con = con.substring(1);
+			con = trim(con);
 
 			// remove comments & stuff
 			while(con.substring(0,4) === '<!--'){
@@ -77,7 +77,7 @@ function XMLtoJSON(inputXML){
 			}
 
 			// remove whitespace
-			while(con.charAt(0) === ' ') con = con.substring(1);
+			con = trim(con);
 
 			if(con === ''){
 				log('\tcontent is empty string');
@@ -110,7 +110,7 @@ function XMLtoJSON(inputXML){
 				con = con.substring(endpos);
 			}
 
-			while(con.charAt(0) === ' ') con = con.substring(1);
+			con = trim(con);
 			if(con === ''){
 				log('\tdone with all tags in content');
 				return result;
@@ -127,16 +127,16 @@ function XMLtoJSON(inputXML){
 
 		while(attr.indexOf(' =') > -1) attr = attr.replace(' =', '=');
 		while(attr.indexOf('= ') > -1) attr = attr.replace('= ', '=');
-		while(attr.charAt(0) === ' ') attr = attr.substring(1);
+		attr = trim(attr);
 
 		if(!attr) {
-			log('\t false attributes, returning []');
-			return [];
+			log('\t false attributes, returning {}');
+			return {};
 		} else {
 			log(attr);
 		}
 
-		var result = [];
+		var result = {};
 		var start = 0;
 		var curr = 0;
 		var quote = false;
@@ -154,6 +154,7 @@ function XMLtoJSON(inputXML){
 			for(var n=curr; n<(curr+256); n++){
 				if(attr.charAt(curr) === '='){
 					attr_name = attr.substring(start, curr);
+					attr_name = trim(attr_name);
 					break;
 				} else {
 					curr++;
@@ -168,16 +169,14 @@ function XMLtoJSON(inputXML){
 			for(var v=curr; v<(curr+256); v++){
 				if(attr.charAt(curr) === quote){
 					attr_value = attr.substring(start, curr);
+					attr_value = trim(attr_value);
 					break;
 				} else {
 					curr++;
 				}
 			}
 
-			result.push({
-				'name' : attr_name,
-				'value' : attr_value
-			});
+			result[attr_name] = attr_value;
 
 			curr++;
 			start = curr;
@@ -187,4 +186,6 @@ function XMLtoJSON(inputXML){
 	}
 
 	function log(text) { if(console_debug) console.log(text); }
+
+	function trim(text) { return text.replace(/^\s+|\s+$/g, ''); }
 }

@@ -1,22 +1,23 @@
 # XMLtoJSON
 I know there are probably 13.5 Million of these already, but I wanted to do one myslef, okay?
 
-### resulting data structure
+### resulting xmltag data structure
 ```javascript
-var xmltags = [
-	{
-		name : 'xml_tagname',
-		attributes : [
-			{
-				name : 'xml_attribute_name',
-				value : 'XML Attribute value'
-			},
-			{...}
-		],
-		content : [ more xmltags ] or 'a string value'
+{
+	name : 'xml_tagname',
+	attributes : {
+		'xml_attribute_name1' : 'XML Attribute value1',
+		'xml_attribute_name2' : 'XML Attribute value2',
+		'xml_attribute_name3' : 'XML Attribute value3',
+		...
 	},
-	{...}
-];
+	content : [ 
+		{ xmltags },
+		{ xmltags },
+		'text values'
+		...
+	]
+}
 ```
 
 ### Things to consider
