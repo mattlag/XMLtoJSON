@@ -1,5 +1,5 @@
 function XMLtoJSON(inputXML){
-	var console_debug = true;
+	var console_debug = false;
 	var XMLdoc, XMLerror;
 	inputXML = inputXML.replace(/(\r\n|\n|\r|\t)/gm,"");
 	log('PASSED\n' + inputXML);

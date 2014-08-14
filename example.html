@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>XMLtoJSON example</title>
-<script src='XMLtoJSON_dom-style.js'></script>
+<script src='XMLtoJSON.js'></script>
 <style>
 	* {
 		font-family: sans-serif;
@@ -38,11 +38,15 @@
 <script type="text/javascript">
 	function getThatJson () {
 		var xml_in = '' + document.getElementById('xml').value;
-		var result = XMLtoJSON(xml_in);
-		console.log(result);
-		result = JSON.stringify(result, undefined, ' ');
-		result = result.replace(/\n/g, '\r\n');
-		document.getElementById('json').value = result;
+
+		try{
+			var result = XMLtoJSON(xml_in);
+			result = JSON.stringify(result, undefined, ' ');
+			result = result.replace(/\n/g, '\r\n');
+			document.getElementById('json').value = result;
+		} catch (error){
+			alert(error.message);
+		}
 	}
 </script>
 </head>
