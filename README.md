@@ -19,6 +19,7 @@ I know there are probably 13.5 Million of these already, but I wanted to do one 
 	]
 }
 ```
+A proper JavaScript SyntaxError will be thrown if the XML is not properly formatted.
 
 ### Things to consider
 XMLtoJSON is really focused on data, and not so much the metadata. So I did this:
