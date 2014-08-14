@@ -1,6 +1,6 @@
 function XMLtoJSON(inputXML){
 	var console_debug = true;
-	var XMLdoc;
+	var XMLdoc, XMLerror;
 	inputXML = inputXML.replace(/(\r\n|\n|\r|\t)/gm,"");
 	log('PASSED\n' + inputXML);
 
@@ -11,13 +11,17 @@ function XMLtoJSON(inputXML){
 		XMLdoc.async = "false";
 		XMLdoc.loadXML(inputXML);
 	} else {
-		console.log('No XML document parser found, returning {}');
-		return {};
+		console.warn('No XML document parser found.');
+		XMLerror = new SyntaxError('No XML document parser found.');
+		throw XMLerror;
 	}
 
-	if (XMLdoc.getElementsByTagName( "parsererror" ).length) {
-		document.getElementById('json').parentNode.innerHTML = XMLdoc.body.innerHTML;
-		throw "Invalid XML";
+	var parsererror = XMLdoc.getElementsByTagName("parsererror");
+	if (parsererror.length) {
+		var msgcon = XMLdoc.getElementsByTagName('div')[0].innerHTML;
+		console.warn("Invalid XML:\n" + msgcon);
+		XMLerror = new SyntaxError(JSON.stringify(msgcon));
+		throw XMLerror;
 	}
 
 	return {
