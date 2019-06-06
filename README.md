@@ -1,5 +1,5 @@
 # XMLtoJSON
-I know there are probably 13.5 Million of these already, but I wanted to do one myslef, okay?
+I know there are probably 13.5 Million of these already, but I wanted to do one myself, okay?
 
 ### resulting xmltag data structure
 ```javascript
@@ -14,8 +14,8 @@ I know there are probably 13.5 Million of these already, but I wanted to do one 
     content : [ 
         { xmltags },
         { xmltags },
-        'text values'
-        ...
+        ...,
+        'text content'
     ]
 }
 ```
@@ -29,13 +29,10 @@ XMLtoJSON is really focused on data, and not so much the metadata. So I did this
 * Newline and Tab characters, like \r \n \t, are blindly removed from everywhere
 
 ## License
-Copyright (C) 2018 Matthew LaGrandeur, released under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
+Copyright (C) 2019 Matthew LaGrandeur, released under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
 ## Author
 | ![Matthew LaGrandeur's picture](https://1.gravatar.com/avatar/f6f7b963adc54db7e713d7bd5f4903ec?s=70) |
 |---|
 | [Matthew LaGrandeur](http://mattlag.com/) |
 | matt[at]mattlag[dot]com |
-
-
-
