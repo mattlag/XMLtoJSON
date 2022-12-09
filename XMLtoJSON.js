@@ -1,102 +1,109 @@
-/* exported XMLtoJSON */
-/* eslint-disable no-console */
 /**
  * XML to JSON does exactly what it sounds like.
  * Feed it an XML string, and it converts the data
  * to JSON format.
- * @param {string} inputXML - XML data
- * @return {string}
+ * @param {String} inputXML - XML data
+ * @return {Object} - Javascript object
  */
-function XMLtoJSON(inputXML){
-    var console_debug = false;
-    var XMLdoc, XMLerror;
-    // log('convertXMLtoJSON \t PASSED\n' + inputXML);
+function XMLtoJSON(inputXML) {
+	const console_debug = false;
+	// log('XMLtoJSON - start');
+	// log(inputXML);
+	let XMLdoc;
+	let XMLerror;
 
-    if (typeof window.DOMParser !== 'undefined') {
-        XMLdoc = (new window.DOMParser()).parseFromString(inputXML, 'text/xml');
-    } else if (typeof window.ActiveXObject !== 'undefined' && new window.ActiveXObject('Microsoft.XMLDOM')) {
-        XMLdoc = new window.ActiveXObject('Microsoft.XMLDOM');
-        XMLdoc.async = 'false';
-        XMLdoc.loadXML(inputXML);
-    } else {
-        console.warn('No XML document parser found.');
-        XMLerror = new SyntaxError('No XML document parser found.');
-        throw XMLerror;
-    }
+	if (typeof window.DOMParser !== 'undefined') {
+		XMLdoc = new window.DOMParser().parseFromString(inputXML, 'text/xml');
+	} else if (
+		typeof window.ActiveXObject !== 'undefined' &&
+		new window.ActiveXObject('Microsoft.XMLDOM')
+	) {
+		XMLdoc = new window.ActiveXObject('Microsoft.XMLDOM');
+		XMLdoc.async = 'false';
+		XMLdoc.loadXML(inputXML);
+	} else {
+		console.warn('No XML document parser found.');
+		XMLerror = new SyntaxError('No XML document parser found.');
+		throw XMLerror;
+	}
 
-    var parsererror = XMLdoc.getElementsByTagName('parsererror');
-    if (parsererror.length) {
-        var msgcon = XMLdoc.getElementsByTagName('div')[0].innerHTML;
-        XMLerror = new SyntaxError(trim(msgcon));
-        throw XMLerror;
-    }
+	const error = XMLdoc.getElementsByTagName('parsererror');
+	if (error.length) {
+		const message = XMLdoc.getElementsByTagName('div')[0].innerHTML;
+		XMLerror = new SyntaxError(trim(message));
+		throw XMLerror;
+	}
 
-    return {
-        'name' : XMLdoc.documentElement.nodeName,
-        'attributes' : tag_getAttributes(XMLdoc.documentElement.attributes),
-        'content' : tag_getContent(XMLdoc.documentElement)
-    };
+	const result = {
+		name: XMLdoc.documentElement.nodeName,
+		attributes: tag_getAttributes(XMLdoc.documentElement.attributes),
+		content: tag_getContent(XMLdoc.documentElement),
+	};
+	// log(result);
+	// log('XMLtoJSON - end');
+	return result;
 
+	function tag_getContent(parent) {
+		const kids = parent.childNodes;
+		// log(`\ntag_getContent - ${parent.nodeName}`);
+		// log(kids);
 
-    function tag_getContent(parent) {
-        var kids = parent.childNodes;
-        // log('\nTAG: ' + parent.nodeName + '\t' + parent.childNodes.length);
+		if (kids.length === 0) return trim(parent.nodeValue);
 
-        if(kids.length === 0) return trim(parent.nodeValue);
+		const result = [];
+		let tagResult;
+		let tagContent;
+		let tagAttributes;
 
-        var result = [];
-        var node, tagresult, tagcontent, tagattributes;
+		for (const node of kids) {
+			tagResult = {};
+			if (node.nodeName === '#comment') continue;
 
-        for(var k=0; k<kids.length; k++){
-            tagresult = {};
-            node = kids[k];
-            // log('\n\t>>START kid ' + k + ' ' + node.nodeName);
-            if(node.nodeName === '#comment') break;
+			tagContent = tag_getContent(node);
+			tagAttributes = tag_getAttributes(node.attributes);
 
-            tagcontent = tag_getContent(node);
-            tagattributes = tag_getAttributes(node.attributes);
+			if (node.nodeName === '#text' && JSON.stringify(tagAttributes) === '{}') {
+				tagResult = trim(tagContent);
+			} else {
+				tagResult.name = node.nodeName;
+				tagResult.attributes = tagAttributes;
+				tagResult.content = tagContent;
+			}
 
-            if(node.nodeName === '#text' && JSON.stringify(tagattributes) === '{}'){
-                tagresult = trim(tagcontent);
-            } else {
-                tagresult.name = node.nodeName;
-                tagresult.attributes = tagattributes;
-                tagresult.content = tagcontent;
-            }
+			if (tagResult !== '') result.push(tagResult);
+		}
 
-            if(tagresult !== '') result.push(tagresult);
+		// log(`tag_getContent - ${parent.nodeName} \n`);
+		return result;
+	}
 
-            // log('\t>>END kid ' + k);
-        }
+	function tag_getAttributes(attributes) {
+		if (!attributes || !attributes.length) return {};
 
-        return result;
-    }
+		// log('\ntag_getAttributes');
+		// log(attributes);
 
-    function tag_getAttributes(attributes) {
-        if(!attributes || !attributes.length) return {};
+		const result = {};
 
-        // log('\t\t tag_getAttributes:');
-        // log(attributes);
+		for (const attribute of attributes) {
+			// log(`\t${attribute.name} : ${attribute.value}`);
+			result[attribute.name] = trim(attribute.value);
+		}
 
-        var result = {};
-        var attr;
+		// log('tag_getAttributes\n');
+		return result;
+	}
 
-        for(var a=0; a<attributes.length; a++){
-            attr = attributes[a];
-            // log('\t\t'+attr.name+' : '+attr.value);
-            result[attr.name] = trim(attr.value);
-        }
+	function trim(text) {
+		try {
+			text = text.replace(/^\s+|\s+$/g, '');
+			return text.replace(/(\r\n|\n|\r|\t)/gm, '');
+		} catch (e) {
+			return '';
+		}
+	}
 
-        return result;
-    }
-
-    function trim(text) {
-        try { 
-            text = text.replace(/^\s+|\s+$/g, '');
-            return text.replace(/(\r\n|\n|\r|\t)/gm,'');
-        } catch(e) { return ''; }
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    function log(text) { if(console_debug) console.log(text); }
+	function log(text) {
+		if (console_debug) console.log(text);
+	}
 }
