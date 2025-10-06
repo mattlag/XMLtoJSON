@@ -16,15 +16,27 @@ function XMLtoJSON(inputXML = '', trimOptions = {}) {
 	let XMLdoc;
 	let XMLerror;
 
-	if (typeof window.DOMParser !== 'undefined') {
+	// Check if we're in a browser environment
+	if (typeof window !== 'undefined' && typeof window.DOMParser !== 'undefined') {
 		XMLdoc = new window.DOMParser().parseFromString(inputXML, 'text/xml');
 	} else if (
+		typeof window !== 'undefined' &&
 		typeof window.ActiveXObject !== 'undefined' &&
 		new window.ActiveXObject('Microsoft.XMLDOM')
 	) {
 		XMLdoc = new window.ActiveXObject('Microsoft.XMLDOM');
 		XMLdoc.async = 'false';
 		XMLdoc.loadXML(inputXML);
+	} else if (typeof require !== 'undefined') {
+		// Node.js environment - use @xmldom/xmldom package
+		try {
+			const { DOMParser } = require('@xmldom/xmldom');
+			XMLdoc = new DOMParser().parseFromString(inputXML, 'text/xml');
+		} catch (e) {
+			console.warn('@xmldom/xmldom package not found. Please install it with: npm install @xmldom/xmldom');
+			XMLerror = new SyntaxError('@xmldom/xmldom package required for Node.js environment. Install with: npm install @xmldom/xmldom');
+			throw XMLerror;
+		}
 	} else {
 		console.warn('No XML document parser found.');
 		XMLerror = new SyntaxError('No XML document parser found.');
@@ -52,14 +64,17 @@ function XMLtoJSON(inputXML = '', trimOptions = {}) {
 		// log(`\ntag_getContent - ${parent.nodeName}`);
 		// log(kids);
 
-		if (kids.length === 0) return trim(parent.nodeValue);
+		if (!kids || kids.length === 0) return trim(parent.nodeValue || '');
 
 		const result = [];
 		let tagResult;
 		let tagContent;
 		let tagAttributes;
 
-		for (const node of kids) {
+		// Convert NodeList to Array to ensure it's iterable
+		const childArray = Array.from(kids);
+
+		for (const node of childArray) {
 			tagResult = {};
 			tagContent = tag_getContent(node);
 			tagAttributes = tag_getAttributes(node.attributes);
@@ -114,5 +129,21 @@ function XMLtoJSON(inputXML = '', trimOptions = {}) {
 
 	function log(text) {
 		if (console_debug) console.log(text);
+	}
+}
+
+// Export for different module systems
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+	// CommonJS (Node.js)
+	module.exports = XMLtoJSON;
+} else if (typeof define === 'function' && define.amd) {
+	// AMD
+	define(function() {
+		return XMLtoJSON;
+	});
+} else {
+	// Browser global
+	if (typeof window !== 'undefined') {
+		window.XMLtoJSON = XMLtoJSON;
 	}
 }

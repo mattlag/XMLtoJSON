@@ -1,0 +1,39 @@
+{
+  "name": "xmltojson-lagrandeur",
+  "version": "1.0.0",
+  "description": "Convert XML strings to JSON objects with a simple, lightweight parser",
+  "main": "XMLtoJSON.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "xml",
+    "json",
+    "parser",
+    "convert",
+    "xml-to-json",
+    "xml-parser",
+    "lightweight"
+  ],
+  "author": "Matthew LaGrandeur <matt@mattlag.com>",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattlag/XMLtoJSON.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mattlag/XMLtoJSON/issues"
+  },
+  "homepage": "https://github.com/mattlag/XMLtoJSON#readme",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.10"
+  },
+  "files": [
+    "XMLtoJSON.js",
+    "README.md",
+    "LICENSE-gpl-3.0.txt"
+  ]
+}

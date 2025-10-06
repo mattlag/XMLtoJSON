@@ -2,6 +2,47 @@
 
 I know there are probably 13.5 Million of these already, but I wanted to do one myself, okay?
 
+## Installation
+
+### npm
+```bash
+npm install xmltojson-lagrandeur
+```
+
+### Browser
+Include the script directly:
+```html
+<script src="XMLtoJSON.js"></script>
+```
+
+## Usage
+
+### Node.js
+```javascript
+const XMLtoJSON = require('xmltojson-lagrandeur');
+
+const xmlString = '<root><item id="1">Hello</item><item id="2">World</item></root>';
+const result = XMLtoJSON(xmlString);
+console.log(JSON.stringify(result, null, 2));
+```
+
+### Browser
+```javascript
+const xmlString = '<root><item id="1">Hello</item><item id="2">World</item></root>';
+const result = XMLtoJSON(xmlString);
+console.log(JSON.stringify(result, null, 2));
+```
+
+### With trim options
+```javascript
+const xmlString = '<root>\n\t<item id="1">  Hello  </item>\n</root>';
+const result = XMLtoJSON(xmlString, {
+    trimWhitespace: true,  // default: true
+    trimNewlines: true,    // default: true
+    trimTabs: true         // default: true
+});
+```
+
 ### resulting xml_tag data structure
 
 ```javascript
@@ -35,7 +76,7 @@ XMLtoJSON is really focused on data, and not so much the metadata. So I did this
 
 # License & Copyright
 
-Copyright © 2024 Matthew LaGrandeur
+Copyright © 2025 Matthew LaGrandeur
 
 Released under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
