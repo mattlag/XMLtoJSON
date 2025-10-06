@@ -3,12 +3,16 @@
  * Feed it an XML string, and it converts the data
  * to JSON format.
  * @param {String} inputXML - XML data
+ * @param {Object} trimOptions - How to handle whitespace, newlines, and tabs
  * @return {Object} - Javascript object
  */
-function XMLtoJSON(inputXML) {
+function XMLtoJSON(inputXML = '', trimOptions = {}) {
 	const console_debug = false;
 	// log('XMLtoJSON - start');
 	// log(inputXML);
+	const trimWhitespace = trimOptions.trimWhitespace || true;
+	const trimNewlines = trimOptions.trimNewlines || true;
+	const trimTabs = trimOptions.trimTabs || true;
 	let XMLdoc;
 	let XMLerror;
 
@@ -57,13 +61,16 @@ function XMLtoJSON(inputXML) {
 
 		for (const node of kids) {
 			tagResult = {};
-			if (node.nodeName === '#comment') continue;
-
 			tagContent = tag_getContent(node);
 			tagAttributes = tag_getAttributes(node.attributes);
 
 			if (node.nodeName === '#text' && JSON.stringify(tagAttributes) === '{}') {
 				tagResult = trim(tagContent);
+			} else if (
+				node.nodeName === '#comment' &&
+				JSON.stringify(tagAttributes) === '{}'
+			) {
+				tagResult = `<!-- ${trim(tagContent)} -->`;
 			} else {
 				tagResult.name = node.nodeName;
 				tagResult.attributes = tagAttributes;
@@ -96,8 +103,10 @@ function XMLtoJSON(inputXML) {
 
 	function trim(text) {
 		try {
-			text = text.replace(/^\s+|\s+$/g, '');
-			return text.replace(/(\r\n|\n|\r|\t)/gm, '');
+			if (trimWhitespace) text = text.replace(/^\s+|\s+$/g, '');
+			if (trimNewlines) text = text.replace(/(\r\n|\n|\r)/gm, '');
+			if (trimTabs) text = text.replace(/\t/gm, '');
+			return text;
 		} catch (e) {
 			return '';
 		}
