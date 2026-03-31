@@ -1,0 +1,30 @@
+{
+  "name": "@mattlag/xmltojson",
+  "version": "2.0.2",
+  "description": "Convert XML to JSON in JavaScript.",
+  "main": "XMLtoJSON.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattlag/XMLtoJSON.git"
+  },
+  "keywords": [
+    "xml",
+    "json",
+    "converter",
+    "utility",
+    "parser",
+    "javascript",
+    "data"
+  ],
+  "author": "Matthew LaGrandeur <matt@matttlag.com>",
+  "contributors": [
+    "Matthew LaGrandeur <matt@matttlag.com>"
+  ],
+  "homepage": "https://github.com/mattlag/XMLtoJSON#readme",
+  "bugs": {
+    "url": "https://github.com/mattlag/XMLtoJSON/issues"
+  },
+  "license": "GPL-3.0"
+}

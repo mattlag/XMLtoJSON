@@ -6,7 +6,7 @@
  * @param {Object} trimOptions - How to handle whitespace, newlines, and tabs
  * @return {Object} - Javascript object
  */
-function XMLtoJSON(inputXML = '', trimOptions = {}) {
+export function XMLtoJSON(inputXML = '', trimOptions = {}) {
 	const console_debug = false;
 	// log('XMLtoJSON - start');
 	// log(inputXML);

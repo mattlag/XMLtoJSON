@@ -1,0 +1,5 @@
+# .npmignore
+# Ignore development and config files
+README.md
+LICENSE-gpl-3.0.txt
+example.html
